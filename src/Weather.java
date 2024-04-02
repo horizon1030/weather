@@ -9,11 +9,11 @@ import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
 
 public class Weather {
-    //ì˜ˆì¸¡ë˜ëŠ” ì‹œê°„ì˜ ë‚ ì§œë‚˜ ì¶”ê°€ì ì¸ ì •ë³´ ì €ì¥ í•„ìš”
-    //ì¤‘ê¸° ì˜ˆë³´ì™€ ë‹¨ê¸° ì˜ˆë³´ì— ê° 4ì¢…ì„ í™•ì¸í•˜ê³  ê°€ì¥ ì í•©í•œ ê²ƒì„ ì„ íƒí•  í•„ìš”ê°€ ìˆìŒ
-    int tmp; // ì˜¨ë„
-    int pop; // ê°•ìˆ˜í™•ë¥ 
-    int pcp; // ê°•ìˆ˜ëŸ‰
+    //¿¹ÃøµÇ´Â ½Ã°£ÀÇ ³¯Â¥³ª Ãß°¡ÀûÀÎ Á¤º¸ ÀúÀå ÇÊ¿ä
+    //Áß±â ¿¹º¸¿Í ´Ü±â ¿¹º¸¿¡ °¢ 4Á¾À» È®ÀÎÇÏ°í °¡Àå ÀûÇÕÇÑ °ÍÀ» ¼±ÅÃÇÒ ÇÊ¿ä°¡ ÀÖÀ½
+    int tmp; // ¿Âµµ
+    int pop; // °­¼öÈ®·ü
+    int pcp; // °­¼ö·®
     String serviceKey = new String("QD7zanvK2jd%2FgLcdz2nBxdtEq6Fysy0gY9Mz4YvPT7XizIYXPkOPvMwSeTHG%2BCDhQcuI5g%2BfE%2FU3u3NIY7lsFQ%3D%3D");
     
     public int getTmp(){return tmp;}
@@ -21,15 +21,16 @@ public class Weather {
     public int getpcp(){return pcp;}
     public void getWeather(String date, String time, String nx, String ny)
     //data yymmdd time hhmm
-    //time 3ì‹œê°„ ê°„ê²©ìœ¼ë¡œ ì˜ˆë³´ê°€ ì˜¬ë¼ì˜¤ëŠ” ë“¯í•˜ë©° 18ì‹œì˜ ì˜ˆë³´ë¥¼ ë³´ê³ ì‹¶ë‹¤ë©´ ê·¸ë³´ë‹¤ ì „ì˜ ì‹œê°„(ex 1759)ë¥¼ ë„£ì–´ì•¼í•¨
+    //time 3½Ã°£ °£°İÀ¸·Î ¿¹º¸°¡ ¿Ã¶ó¿À´Â µíÇÏ¸ç 18½ÃÀÇ ¿¹º¸¸¦ º¸°í½Í´Ù¸é ±×º¸´Ù ÀüÀÇ ½Ã°£(ex 1759)¸¦ ³Ö¾î¾ßÇÔ
     {
-        getWeather_2(date, time, "108");
+        getWeather_shortTerm(date, time, nx, ny);
+        // getWeather_2(date, time, "108");
     }
 
     private void getWeather_shortTerm(String date, String time, String nx, String ny)
     {
         int num = 12;
-        //ë‹¨ê¸°ì˜ˆë³´ ì¡°íšŒ
+        //´Ü±â¿¹º¸ Á¶È¸
         String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" +  Integer.toString(num) + "&pageNo=1&base_date=" + date + "&base_time=" + time + "&nx=" + nx + "&ny=" + ny;
         JSONObject responseJson = getJson(api);
         JSONObject temp;
@@ -37,7 +38,7 @@ public class Weather {
         for(int i = 0; i < num; ++i)
         {
             temp = (JSONObject)item.get(i);
-            System.err.println(temp.get("category") + " : " + temp.get("fcstValue"));
+            // System.err.println(temp.get("category") + " : " + temp.get("fcstValue"));
             if (temp.get("category") == "TMP")
                 tmp = Integer.valueOf((String)(temp.get("fcstValue")));
             if (temp.get("category") == "POP")
@@ -53,14 +54,14 @@ public class Weather {
     }
     private void getWeather_2(String date, String time, String regld)
     {
-        //ì¤‘ê¸°ì „ë§ ì¡°íšŒ
-        //text í˜•ì‹ì˜ ì˜ˆë³´ë¼ í•„ìš”í•˜ì§€ ì•ŠìŒ
+        //Áß±âÀü¸Á Á¶È¸
+        //text Çü½ÄÀÇ ¿¹º¸¶ó ÇÊ¿äÇÏÁö ¾ÊÀ½
         int num = 12;
-        //ì¤‘ê¸°ì˜ˆë³´ ì¡°íšŒ
+        //Áß±â¿¹º¸ Á¶È¸
         String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidFcst?serviceKey=" + serviceKey + "&numOfRows=10&pageNo=1&stnId=133&tmFc=202404020600";
-        System.out.println(api);
+        // System.out.println(api);
         JSONObject responseJson = getJson(api);
-        System.out.println(responseJson);
+        // System.out.println(responseJson);
     }
     private static JSONObject getJson(String api)
     {
@@ -70,14 +71,16 @@ public class Weather {
             URI uri = new URI(api);
             URL url = uri.toURL();
 			HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setRequestProperty("Content-Type", "application/json;UTF-8");
             BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             int a;
             while ((a = br.read()) != -1) {
-                System.err.print((char)a);
                 sb.append((char)a);
             }
+            // String a;
+            // while ((a = br.readLine()) != null) {
+            //     sb.append(a);
+            // }
             br.close();
             JSONParser jsonParser = new JSONParser();
             Object obj = jsonParser.parse(sb.toString());
@@ -87,7 +90,7 @@ public class Weather {
         {
             System.out.println(e.getMessage());
         }
-        System.err.println(responseJson);
+        System.out.println(responseJson);
         return responseJson;
     }
 }
