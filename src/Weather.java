@@ -9,36 +9,110 @@ import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
 
 public class Weather {
-    //�����Ǵ� �ð��� ��¥�� �߰����� ���� ���� �ʿ�
-    //�߱� ������ �ܱ� ������ �� 4���� Ȯ���ϰ� ���� ������ ���� ������ �ʿ䰡 ����
-    int tmp; // �µ�
-    int pop; // ����Ȯ��
-    int pcp; // ������
+    //예측되는 시간의 날짜나 추가적인 정보 저장 필요
+    //중기 예보와 단기 예보에 각 4종을 확인하고 가장 적합한 것을 선택할 필요가 있음
+    String type;
+    int tmp; // 온도
+    int pop; // 강수확률
+    int pcp; // 강수량
+    Date fcst; //예보
+    Date base; // 발표
+    Location location;
     String serviceKey = new String("QD7zanvK2jd%2FgLcdz2nBxdtEq6Fysy0gY9Mz4YvPT7XizIYXPkOPvMwSeTHG%2BCDhQcuI5g%2BfE%2FU3u3NIY7lsFQ%3D%3D");
     
+    public Weather(){type = null;}
+
+    public Weather(Date _base, Location _location)
+    {
+        base = _base;
+        location = _location;
+        type = null;
+    }
+
     public int getTmp(){return tmp;}
     public int getPop(){return pop;}
     public int getpcp(){return pcp;}
-    public void getWeather(String date, String time, String nx, String ny)
-    //data yymmdd time hhmm
-    //time 3�ð� �������� ������ �ö���� ���ϸ� 18���� ������ �����ʹٸ� �׺��� ���� �ð�(ex 1759)�� �־����
+    public void setType(String _type){type = _type;}
+    public void setFcst(Date _fcst){fcst = _fcst;}
+    public void setBase(Date _base){base = _base;}
+    public void setLocation(Location _location){location = _location;}
+    public void getWeather()
     {
-        getWeather_shortTerm(date, time, nx, ny);
-        // getWeather_2(date, time, "108");
+        // getWeather_shortTerm();
+        getWeather_midTerm();
     }
 
-    private void getWeather_shortTerm(String date, String time, String nx, String ny)
+    private void getWeather_shortTerm()
     {
+        // getWeather_shortTerm_1();
+        // getWeather_shortTerm_2();
+        // getWeather_shortTerm_3();
+        getWeather_shortTerm_4();
+    }
+
+    private void getWeather_shortTerm_1()
+    {
+        type = "초단기실황조회";
+        int num = 8;
+        String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=1&base_date=" + base.date + "&base_time=" + base.time + "&nx=" + location.nx + "&ny=" + location.ny;
+        JSONObject responseJson = getJson(api);
+        JSONObject temp;
+        JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
+        System.out.println(item);
+        for(int i = 0; i < num; ++i)
+        {
+            temp = (JSONObject)item.get(i);
+            // System.err.println(temp.get("category") + " : " + temp.get("fcstValue"));
+            if (temp.get("category") == "T1H")
+                tmp = Integer.valueOf((String)(temp.get("fcstValue")));
+            if (temp.get("category") == "RN1")
+            {
+                if (((String)(temp.get("fcstValue"))).chars().allMatch(Character::isDigit))
+                    pcp = Integer.valueOf((String)(temp.get("fcstValue")));
+                else
+                    pcp = 0;
+            }
+        }
+    }
+
+    private void getWeather_shortTerm_2()
+    {
+        type = "초단기예보조회";
+        int num = 10;
+        int pageNo = 1;
+        String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.date + "&base_time=" + base.time + "&nx=" + location.nx + "&ny=" + location.ny;
+        JSONObject responseJson = getJson(api);
+        JSONObject temp;
+        JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
+        System.out.println(item);
+        for(int i = 0; i < num; ++i)
+        {
+            temp = (JSONObject)item.get(i);
+            System.err.println(temp.get("category") + " : " + temp.get("fcstValue"));
+            if (temp.get("category") == "T1H")
+                tmp = Integer.valueOf((String)(temp.get("fcstValue")));
+            if (temp.get("category") == "RN1")
+            {
+                if (((String)(temp.get("fcstValue"))).chars().allMatch(Character::isDigit))
+                    pcp = Integer.valueOf((String)(temp.get("fcstValue")));
+                else
+                    pcp = 0;
+            }
+        }
+    }
+
+    private void getWeather_shortTerm_3()
+    {
+        type = "단기예보조회";
         int num = 12;
-        //�ܱ⿹�� ��ȸ
-        String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" +  Integer.toString(num) + "&pageNo=1&base_date=" + date + "&base_time=" + time + "&nx=" + nx + "&ny=" + ny;
+        int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
+        String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.date + "&base_time=" + base.time + "&nx=" + location.nx + "&ny=" + location.ny;
         JSONObject responseJson = getJson(api);
         JSONObject temp;
         JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
         for(int i = 0; i < num; ++i)
         {
             temp = (JSONObject)item.get(i);
-            // System.err.println(temp.get("category") + " : " + temp.get("fcstValue"));
             if (temp.get("category") == "TMP")
                 tmp = Integer.valueOf((String)(temp.get("fcstValue")));
             if (temp.get("category") == "POP")
@@ -52,17 +126,132 @@ public class Weather {
             }
         }
     }
-    private void getWeather_2(String date, String time, String regld)
+
+    private void getWeather_shortTerm_4()
     {
-        //�߱����� ��ȸ
-        //text ������ ������ �ʿ����� ����
+        type = "예보버전조회";
+        //최근에 업데이트된 단기예보의 상태를 확인하는 용도로 보임 사용하지는 않을 듯
         int num = 12;
-        //�߱⿹�� ��ȸ
-        String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidFcst?serviceKey=" + serviceKey + "&numOfRows=10&pageNo=1&stnId=133&tmFc=202404020600";
-        // System.out.println(api);
+        int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
+        String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getFcstVersion?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&basedatetime=" + base.date + base.time + "&ftype=ODAM";
+
         JSONObject responseJson = getJson(api);
-        // System.out.println(responseJson);
+        JSONObject temp;
+        System.out.println(responseJson);
+        // JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
+        // System.err.println(item);
+        // for(int i = 0; i < num; ++i)
+        // {
+        //     temp = (JSONObject)item.get(i);
+        //     System.err.println(temp.get("category") + " : " + temp.get("fcstValue"));
+        //     if (temp.get("category") == "TMP")
+        //         tmp = Integer.valueOf((String)(temp.get("fcstValue")));
+        //     if (temp.get("category") == "POP")
+        //         pop = Integer.valueOf((String)(temp.get("fcstValue")));
+        //     if (temp.get("category") == "PCP")
+        //     {
+        //         if (((String)(temp.get("fcstValue"))).chars().allMatch(Character::isDigit))
+        //             pcp = Integer.valueOf((String)(temp.get("fcstValue")));
+        //         else
+        //             pcp = 0;
+        //     }
+        // }
     }
+
+    private void getWeather_midTerm()
+    {
+        //날씨와 기온을 2,3이 제공하니 오늘에 대해서 이후의 예보를 한꺼번에 조회하는 형식으로 사용하는 것이 좋으며
+        //2,3 각각 다른 regId를 사용하기 때문에 받을 때 두 종류를 받는 것이 좋을 것같다
+        //단기 중기의 형식이 꽤나 달라서 아예 다른 클래스로 바꾸는 것이 졸다
+        // getWeather_midTerm_1();
+        // getWeather_midTerm_2();
+        getWeather_midTerm_3();
+    }
+
+    private void getWeather_midTerm_1()
+    {
+        //text 형식의 예보라 필요하지 않음
+        //만약 사용한다면 stnId로 다른 코드가 필요
+        type = "중기전망조회";
+        int num = 12;
+        String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidFcst?dataType=JSON&serviceKey=" + serviceKey + "&numOfRows=" + num + "pageNo=1&stnId=" + location.regId + "&tmFc=" + base.date + base.time;
+        System.out.println(api);
+        JSONObject responseJson = getJson(api);
+        System.out.println(responseJson);
+    }
+
+    private void getWeather_midTerm_2()
+    {
+        type = "중기육상예보조회";
+        //강수 확률과 날씨(ex 구름많음 최대 10일)
+        int num = 12;
+        int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
+        String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidLandFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&regId=" + location.regId + "&base_date=" + "&tmFc=" + base.date + base.time;
+        JSONObject responseJson = getJson(api);
+        JSONObject temp;
+        System.err.println(responseJson);
+        // JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
+        // System.err.println(item);
+        // for(int i = 0; i < num; ++i)
+        // {
+        //     temp = (JSONObject)item.get(i);
+        //     if (temp.get("category") == "TMP")
+        //         tmp = Integer.valueOf((String)(temp.get("fcstValue")));
+        //     if (temp.get("category") == "POP")
+        //         pop = Integer.valueOf((String)(temp.get("fcstValue")));
+        //     if (temp.get("category") == "PCP")
+        //     {
+        //         if (((String)(temp.get("fcstValue"))).chars().allMatch(Character::isDigit))
+        //             pcp = Integer.valueOf((String)(temp.get("fcstValue")));
+        //         else
+        //             pcp = 0;
+        //     }
+        // }
+    }
+
+    private void getWeather_midTerm_3()
+    {
+        type = "중기기온조회";
+        //예상기온
+        //중기육상예보조회와 다른 rdgId를 사용함
+        int num = 12;
+        int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
+        String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidTa?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&regId=" + location.regId + "&base_date=" + "&tmFc=" + base.date + base.time;
+        JSONObject responseJson = getJson(api);
+        JSONObject temp;
+        System.err.println(responseJson);
+        // JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
+        // System.err.println(item);
+        // for(int i = 0; i < num; ++i)
+        // {
+        //     temp = (JSONObject)item.get(i);
+        //     if (temp.get("category") == "TMP")
+        //         tmp = Integer.valueOf((String)(temp.get("fcstValue")));
+        //     if (temp.get("category") == "POP")
+        //         pop = Integer.valueOf((String)(temp.get("fcstValue")));
+        //     if (temp.get("category") == "PCP")
+        //     {
+        //         if (((String)(temp.get("fcstValue"))).chars().allMatch(Character::isDigit))
+        //             pcp = Integer.valueOf((String)(temp.get("fcstValue")));
+        //         else
+        //             pcp = 0;
+        //     }
+        // }
+    }
+
+    private void getWeather_midTerm_4()
+    {
+        type = "중기해상예보조회";
+        //regid 형식이 다름
+        //바다의 날씨를 보는 것이니 크게 필요하지 않을 것
+        int num = 12;
+        int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
+        String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidSeaFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&regId=" + location.regId + "&base_date=" + "&tmFc=" + base.date + base.time;
+        JSONObject responseJson = getJson(api);
+        JSONObject temp;
+        System.err.println(responseJson);
+    }
+
     private static JSONObject getJson(String api)
     {
         JSONObject responseJson = null;
@@ -77,10 +266,6 @@ public class Weather {
             while ((a = br.read()) != -1) {
                 sb.append((char)a);
             }
-            // String a;
-            // while ((a = br.readLine()) != null) {
-            //     sb.append(a);
-            // }
             br.close();
             JSONParser jsonParser = new JSONParser();
             Object obj = jsonParser.parse(sb.toString());
@@ -88,9 +273,9 @@ public class Weather {
         }
         catch(Exception e)
         {
+            System.out.println("error");
             System.out.println(e.getMessage());
         }
-        System.out.println(responseJson);
         return responseJson;
     }
 }
