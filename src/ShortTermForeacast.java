@@ -54,7 +54,7 @@ public class ShortTermForeacast {
         type = "초단기실황조회";
         int num = 8;
         String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=1&base_date=" + base.date + "&base_time=" + base.time + "&nx=" + location.nx + "&ny=" + location.ny;
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
         System.out.println(item);
@@ -80,7 +80,7 @@ public class ShortTermForeacast {
         int num = 10;
         int pageNo = 1;
         String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.date + "&base_time=" + base.time + "&nx=" + location.nx + "&ny=" + location.ny;
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
         System.out.println(item);
@@ -106,7 +106,7 @@ public class ShortTermForeacast {
         int num = 12;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.date + "&base_time=" + base.time + "&nx=" + location.nx + "&ny=" + location.ny;
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
         for(int i = 0; i < num; ++i)
@@ -133,7 +133,7 @@ public class ShortTermForeacast {
         int num = 12;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getFcstVersion?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&basedatetime=" + base.date + base.time + "&ftype=ODAM";
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         System.out.println(responseJson);
         // JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
@@ -154,32 +154,5 @@ public class ShortTermForeacast {
         //             pcp = 0;
         //     }
         // }
-    }
-
-    public static JSONObject getJson(String api)
-    {
-        JSONObject responseJson = null;
-        try
-        {
-            URI uri = new URI(api);
-            URL url = uri.toURL();
-			HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            int a;
-            while ((a = br.read()) != -1) {
-                sb.append((char)a);
-            }
-            br.close();
-            JSONParser jsonParser = new JSONParser();
-            Object obj = jsonParser.parse(sb.toString());
-            responseJson = (JSONObject)obj;
-        }
-        catch(Exception e)
-        {
-            System.out.println("error");
-            System.out.println(e.getMessage());
-        }
-        return responseJson;
     }
 }

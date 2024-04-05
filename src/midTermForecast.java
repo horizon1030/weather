@@ -24,6 +24,10 @@ public class midTermForecast {
         location = _location;
         type = null;
         weathr = new MidTermWeathr[8];
+        for(int i = 0; i < 8; ++i)
+        {
+            weathr[i] = new MidTermWeathr();
+        }
     }
 
     public void getWeather_midTerm()
@@ -44,7 +48,7 @@ public class midTermForecast {
         int num = 12;
         String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidFcst?dataType=JSON&serviceKey=" + serviceKey + "&numOfRows=" + num + "pageNo=1&stnId=" + location.regId + "&tmFc=" + base.date + base.time;
         System.out.println(api);
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         System.out.println(responseJson);
     }
 
@@ -55,10 +59,8 @@ public class midTermForecast {
         int num = 12;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidLandFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&regId=" + location.regId + "&base_date=" + "&tmFc=" + base.date + base.time;
-        JSONObject responseJson = getJson(api);
-        JSONObject temp;
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject item = (JSONObject)((JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item")).get(0);
-        System.err.println(item.get("wf8"));
         for(int i = 0; i < 5; ++i)
         {
             weathr[i].rnStAm = item.get("rnSt" + (i + 3) + "Am").toString();
@@ -66,12 +68,19 @@ public class midTermForecast {
             weathr[i].wfAm =  item.get("wf" + (i + 3) + "Am").toString();
             weathr[i].wfPm = item.get("wf" + (i + 3) + "Pm").toString();
         }
-        for(int i = 5; i < 7; ++i)
+        try
         {
-            weathr[i].rnStAm = item.get("rnSt" + (i + 3)).toString();
-            weathr[i].rnStPm = item.get("rnSt" + (i + 3)).toString();
-            weathr[i].wfAm =  item.get("wf" + (i + 3)).toString();
-            weathr[i].wfPm = item.get("wf" + (i + 3)).toString();
+            for(int i = 5; i < 8; ++i)
+            {
+                weathr[i].rnStAm = item.get("rnSt" + (i + 3)).toString();
+                weathr[i].rnStPm = item.get("rnSt" + (i + 3)).toString();
+                weathr[i].wfAm =  item.get("wf" + (i + 3)).toString();
+                weathr[i].wfPm = item.get("wf" + (i + 3)).toString();
+            }
+        }
+        catch(Exception e)
+        {
+
         }
         // for(int i = 0; i < num; ++i)
         // {
@@ -88,7 +97,7 @@ public class midTermForecast {
         int num = 12;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidTa?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&regId=" + location.regId + "&base_date=" + "&tmFc=" + base.date + base.time;
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         System.err.println(responseJson);
         // JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
@@ -118,35 +127,8 @@ public class midTermForecast {
         int num = 12;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidSeaFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&regId=" + location.regId + "&base_date=" + "&tmFc=" + base.date + base.time;
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         System.err.println(responseJson);
-    }
-
-    public static JSONObject getJson(String api)
-    {
-        JSONObject responseJson = null;
-        try
-        {
-            URI uri = new URI(api);
-            URL url = uri.toURL();
-			HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            int a;
-            while ((a = br.read()) != -1) {
-                sb.append((char)a);
-            }
-            br.close();
-            JSONParser jsonParser = new JSONParser();
-            Object obj = jsonParser.parse(sb.toString());
-            responseJson = (JSONObject)obj;
-        }
-        catch(Exception e)
-        {
-            System.out.println("error");
-            System.out.println(e.getMessage());
-        }
-        return responseJson;
     }
 }
