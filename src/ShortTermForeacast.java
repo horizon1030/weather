@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Vector;
 
 import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
@@ -38,25 +39,21 @@ public class ShortTermForeacast {
     public void setFcst(LocalDateTime _fcst){fcst = _fcst;}
     public void setBase(LocalDateTime _base){base = _base;}
     public void setLocation(Location _location){location = _location;}
-    public void getWeather()
-    {
-        // getWeather_shortTerm();
-    }
-
-    private void getWeather_shortTerm()
-    {
-        // getWeather_shortTerm_1();
-        // getWeather_shortTerm_2();
-        // getWeather_shortTerm_3();
-        getWeather_shortTerm_4();
-    }
+    
+    // public void getWeather()
+    // {
+    //     // getWeather_shortTerm_1();
+    //     // getWeather_shortTerm_2();
+    //     getWeather_shortTerm_3();
+    //     // getWeather_shortTerm_4();
+    // }
 
     private void getWeather_shortTerm_1()
     {
         type = "초단기실황조회";
         int num = 8;
         String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=1&base_date=" + base.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "&base_time=" + base.format(DateTimeFormatter.ofPattern("HHmm")) + "&nx=" + location.nx + "&ny=" + location.ny;
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
         System.out.println(item);
@@ -82,7 +79,7 @@ public class ShortTermForeacast {
         int num = 10;
         int pageNo = 1;
         String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "&base_time=" + base.format(DateTimeFormatter.ofPattern("HHmm")) + "&nx=" + location.nx + "&ny=" + location.ny;
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
         System.out.println(item);
@@ -102,30 +99,66 @@ public class ShortTermForeacast {
         }
     }
 
-    private void getWeather_shortTerm_3()
+    public ShortTermWeather[] getWeather()
     {
-        type = "단기예보조회";
-        int num = 12;
+        //단기예보조회
+        int num = 11;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
-        String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "&base_time=" + base.format(DateTimeFormatter.ofPattern("HHmm")) + "&nx=" + location.nx + "&ny=" + location.ny;
-        JSONObject responseJson = getJson(api);
-        JSONObject temp;
-        JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
-        for(int i = 0; i < num; ++i)
+        String api;
+        JSONObject responseJson;
+        JSONObject tempJson;
+        ShortTermWeather weather[];
+        Vector<ShortTermWeather> weatherVector = new Vector<ShortTermWeather>();
+        ShortTermWeather tempWeather;
+        JSONArray item;
+        api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "&base_time=" + base.format(DateTimeFormatter.ofPattern("HHmm")) + "&nx=" + location.nx + "&ny=" + location.ny;
+        responseJson = GetJson.getJson(api);
+        item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");tempJson = (JSONObject)item.get(0);
+        tempJson = (JSONObject)item.get(0);
+        tempWeather = new ShortTermWeather();
+        tempWeather.fcst =LocalDateTime.of( Integer.parseInt((String)tempJson.get("fcstDate")) / 10000
+                                            , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) / 100
+                                            , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) % 100
+                                            ,  Integer.parseInt((String)tempJson.get("fcstTime")) / 100, 0);
+        tempWeather.base = base;
+        while(true)
         {
-            temp = (JSONObject)item.get(i);
-            if (temp.get("category") == "TMP")
-                tmp = Integer.valueOf((String)(temp.get("fcstValue")));
-            if (temp.get("category") == "POP")
-                pop = Integer.valueOf((String)(temp.get("fcstValue")));
-            if (temp.get("category") == "PCP")
+            api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "&base_time=" + base.format(DateTimeFormatter.ofPattern("HHmm")) + "&nx=" + location.nx + "&ny=" + location.ny;
+            responseJson = GetJson.getJson(api);
+            try {item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");tempJson = (JSONObject)item.get(0);}
+            catch(Exception e) {break;}
+            for(int i = 0; i < num; ++i)
             {
-                if (((String)(temp.get("fcstValue"))).chars().allMatch(Character::isDigit))
-                    pcp = Integer.valueOf((String)(temp.get("fcstValue")));
-                else
-                    pcp = 0;
+                try{tempJson = (JSONObject)item.get(i);}
+                catch(Exception e){break;}
+                if (!tempWeather.fcst.format(DateTimeFormatter.ofPattern("HHmm")).equals(tempJson.get("fcstTime")))
+                {
+                    weatherVector.add(tempWeather);
+                    tempWeather = new ShortTermWeather();
+                    tempWeather.fcst = LocalDateTime.of( Integer.parseInt((String)tempJson.get("fcstDate")) / 10000
+                                                        , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) / 100
+                                                        , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) % 100
+                                                        ,  Integer.parseInt((String)tempJson.get("fcstTime")) / 100, 0);
+                    tempWeather.base = base;
+                }
+                if (tempJson.get("category").equals("TMP"))
+                    tempWeather.tmp = Integer.valueOf((String)(tempJson.get("fcstValue")));
+                if (tempJson.get("category").equals("POP"))
+                    tempWeather.pop = Integer.valueOf((String)(tempJson.get("fcstValue")));
+                if (tempJson.get("category").equals("PCP"))
+                {
+                    if (((String)(tempJson.get("fcstValue"))).chars().allMatch(Character::isDigit))
+                    tempWeather.pcp = Integer.valueOf((String)(tempJson.get("fcstValue")));
+                    else
+                    tempWeather.pcp = 0;
+                }
             }
+            ++pageNo;
         }
+        weatherVector.add(tempWeather);
+        weather = new ShortTermWeather[weatherVector.size()];
+        for(int i = 0; i < weatherVector.size(); ++i){weather[i] = weatherVector.get(i);}
+        return weather;
     }
 
     private void getWeather_shortTerm_4()
@@ -135,7 +168,7 @@ public class ShortTermForeacast {
         int num = 12;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getFcstVersion?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&basedatetime=" + base.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm")) + "&ftype=ODAM";
-        JSONObject responseJson = getJson(api);
+        JSONObject responseJson = GetJson.getJson(api);
         JSONObject temp;
         System.out.println(responseJson);
         // JSONArray item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");
@@ -156,32 +189,5 @@ public class ShortTermForeacast {
         //             pcp = 0;
         //     }
         // }
-    }
-
-    public static JSONObject getJson(String api)
-    {
-        JSONObject responseJson = null;
-        try
-        {
-            URI uri = new URI(api);
-            URL url = uri.toURL();
-			HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            int a;
-            while ((a = br.read()) != -1) {
-                sb.append((char)a);
-            }
-            br.close();
-            JSONParser jsonParser = new JSONParser();
-            Object obj = jsonParser.parse(sb.toString());
-            responseJson = (JSONObject)obj;
-        }
-        catch(Exception e)
-        {
-            System.out.println("error");
-            System.out.println(e.getMessage());
-        }
-        return responseJson;
     }
 }

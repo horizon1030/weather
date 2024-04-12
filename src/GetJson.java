@@ -31,7 +31,8 @@ public class GetJson {
         catch(Exception e)
         {
             System.out.println("error");
-            System.out.println(e.getMessage());
+            System.out.println(responseJson);
+            System.err.println(api);
         }
         return responseJson;
     }
