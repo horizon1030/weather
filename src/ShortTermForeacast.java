@@ -102,7 +102,7 @@ public class ShortTermForeacast {
     public ShortTermWeather[] getWeather()
     {
         //단기예보조회
-        int num = 11;
+        int num = 100;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api;
         JSONObject responseJson;
