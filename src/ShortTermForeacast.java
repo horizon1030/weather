@@ -25,9 +25,8 @@ public class ShortTermForeacast {
     
     public ShortTermForeacast(){type = null;}
 
-    public ShortTermForeacast(LocalDateTime _base, Location _location)
+    public ShortTermForeacast(Location _location)
     {
-        base = _base;
         location = _location;
         type = null;
     }
@@ -102,6 +101,12 @@ public class ShortTermForeacast {
     public ShortTermWeather[] getWeather()
     {
         //단기예보조회
+
+        //base_time 구하기
+        base = LocalDateTime.now();
+        if (base.getHour() % 3 != 2) {base = base.minusHours(base.getHour() % 2 + 1);}
+        else if (base.getMinute() < 10){base = base.minusHours(3);}
+        base = base.withMinute(0);
         int num = 100;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api;
@@ -116,7 +121,7 @@ public class ShortTermForeacast {
         item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");tempJson = (JSONObject)item.get(0);
         tempJson = (JSONObject)item.get(0);
         tempWeather = new ShortTermWeather();
-        tempWeather.fcst =LocalDateTime.of( Integer.parseInt((String)tempJson.get("fcstDate")) / 10000
+        tempWeather.fcst = LocalDateTime.of( Integer.parseInt((String)tempJson.get("fcstDate")) / 10000
                                             , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) / 100
                                             , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) % 100
                                             ,  Integer.parseInt((String)tempJson.get("fcstTime")) / 100, 0);
@@ -146,12 +151,7 @@ public class ShortTermForeacast {
                 if (tempJson.get("category").equals("POP"))
                     tempWeather.pop = Integer.valueOf((String)(tempJson.get("fcstValue")));
                 if (tempJson.get("category").equals("PCP"))
-                {
-                    if (((String)(tempJson.get("fcstValue"))).chars().allMatch(Character::isDigit))
-                    tempWeather.pcp = Integer.valueOf((String)(tempJson.get("fcstValue")));
-                    else
-                    tempWeather.pcp = 0;
-                }
+                    tempWeather.pcp = (String)(tempJson.get("fcstValue"));
             }
             ++pageNo;
         }

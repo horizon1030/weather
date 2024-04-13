@@ -52,6 +52,17 @@ public class midTermForecast {
 
     public MidTermWeather[] getWeather_midTerm_get_all()
     {
+        base = LocalDateTime.now();
+        if (base.getHour() >= 18)
+        {
+            base = base.withHour(18).withMinute(0);
+        }
+        else if (base.getHour() < 6)
+        {
+            base = base.minusDays(1).withHour(18).withMinute(0);
+        }
+        else{base = base.withHour(6).withMinute(0);}
+        base = base.withMinute(0);
         MidTermWeather weathr[] = new MidTermWeather[8];
         JSONObject responseJson = null;
         try

@@ -5,7 +5,7 @@ public class App {
         public static void main(String[] args)
         {
                 // System.out.println("한글");
-                ShortTermForeacast weather_f = new ShortTermForeacast(LocalDateTime.of(2024, 4, 12, 20, 0), new Location(55, 127, "11D20501"));
+                ShortTermForeacast weather_f = new ShortTermForeacast(new Location(55, 127, "11D20501"));
                 ShortTermWeather weather_s[] =  weather_f.getWeather();
                 //저는 for문으로 모두 출력했지만 첫번째 인덱스의 시간과 날짜를 보고 몇시간 후인지 전인지 보고 인덱스를 더하고 몇일 뒤인지에 따라 24만큼 인덱스를 더해서 빠르게 접근가능합니다
                 for(ShortTermWeather weather : weather_s)
