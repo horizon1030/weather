@@ -104,7 +104,7 @@ public class ShortTermForeacast {
 
         //base_time 구하기
         base = LocalDateTime.now();
-        if (base.getHour() % 3 != 2) {base = base.minusHours(base.getHour() % 2 + 1);}
+        if (base.getHour() % 3 != 2) {base = base.minusHours(base.getHour() % 3 + 1);}
         else if (base.getMinute() < 10){base = base.minusHours(3);}
         base = base.withMinute(0);
         int num = 100;
