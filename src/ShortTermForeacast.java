@@ -100,6 +100,7 @@ public class ShortTermForeacast {
 
     public ShortTermWeather[] getWeather()
     {
+        base = LocalDateTime.now();
         //단기예보조회
 
         //base_time 구하기
@@ -107,7 +108,7 @@ public class ShortTermForeacast {
         if (base.getHour() % 3 != 2) {base = base.minusHours(base.getHour() % 3 + 1);}
         else if (base.getMinute() < 10){base = base.minusHours(3);}
         base = base.withMinute(0);
-        int num = 100;
+        int num = 9999;
         int pageNo = 1; // 1400의 예보라면 1페이지에 1500 2페이지에 1500식
         String api;
         JSONObject responseJson;
@@ -126,34 +127,26 @@ public class ShortTermForeacast {
                                             , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) % 100
                                             ,  Integer.parseInt((String)tempJson.get("fcstTime")) / 100, 0);
         tempWeather.base = base;
-        while(true)
+        for(int i = 0; i < num; ++i)
         {
-            api = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=" + serviceKey + "&dataType=JSON&numOfRows=" + num + "&pageNo=" + pageNo + "&base_date=" + base.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "&base_time=" + base.format(DateTimeFormatter.ofPattern("HHmm")) + "&nx=" + location.nx + "&ny=" + location.ny;
-            responseJson = GetJson.getJson(api);
-            try {item = (JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item");tempJson = (JSONObject)item.get(0);}
-            catch(Exception e) {break;}
-            for(int i = 0; i < num; ++i)
+            try{tempJson = (JSONObject)item.get(i);}
+            catch(Exception e){break;}
+            if (!tempWeather.fcst.format(DateTimeFormatter.ofPattern("HHmm")).equals(tempJson.get("fcstTime")))
             {
-                try{tempJson = (JSONObject)item.get(i);}
-                catch(Exception e){break;}
-                if (!tempWeather.fcst.format(DateTimeFormatter.ofPattern("HHmm")).equals(tempJson.get("fcstTime")))
-                {
-                    weatherVector.add(tempWeather);
-                    tempWeather = new ShortTermWeather();
-                    tempWeather.fcst = LocalDateTime.of( Integer.parseInt((String)tempJson.get("fcstDate")) / 10000
-                                                        , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) / 100
-                                                        , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) % 100
-                                                        ,  Integer.parseInt((String)tempJson.get("fcstTime")) / 100, 0);
-                    tempWeather.base = base;
-                }
-                if (tempJson.get("category").equals("TMP"))
-                    tempWeather.tmp = Integer.valueOf((String)(tempJson.get("fcstValue")));
-                if (tempJson.get("category").equals("POP"))
-                    tempWeather.pop = Integer.valueOf((String)(tempJson.get("fcstValue")));
-                if (tempJson.get("category").equals("PCP"))
-                    tempWeather.pcp = (String)(tempJson.get("fcstValue"));
+                weatherVector.add(tempWeather);
+                tempWeather = new ShortTermWeather();
+                tempWeather.fcst = LocalDateTime.of( Integer.parseInt((String)tempJson.get("fcstDate")) / 10000
+                                                    , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) / 100
+                                                    , ( Integer.parseInt((String)tempJson.get("fcstDate")) % 10000) % 100
+                                                    ,  Integer.parseInt((String)tempJson.get("fcstTime")) / 100, 0);
+                tempWeather.base = base;
             }
-            ++pageNo;
+            if (tempJson.get("category").equals("TMP"))
+                tempWeather.tmp = Integer.valueOf((String)(tempJson.get("fcstValue")));
+            if (tempJson.get("category").equals("POP"))
+                tempWeather.pop = Integer.valueOf((String)(tempJson.get("fcstValue")));
+            if (tempJson.get("category").equals("PCP"))
+                tempWeather.pcp = (String)(tempJson.get("fcstValue"));
         }
         weatherVector.add(tempWeather);
         weather = new ShortTermWeather[weatherVector.size()];
