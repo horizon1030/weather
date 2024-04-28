@@ -4,7 +4,14 @@ import java.time.format.DateTimeFormatter;
 public class App {
         public static void main(String[] args)
         {
-                // System.out.println("한글");
+                // test_short();
+                // test_mid();
+                // test_text();
+                test_maxmin();
+	}
+
+        static void test_short()
+        {
                 ShortTermForeacast weather_f = new ShortTermForeacast(new Location(55, 127, "11D20501"));
                 long startTime = System.currentTimeMillis();
                 ShortTermWeather weather_s[] =  weather_f.getWeather();
@@ -24,7 +31,10 @@ public class App {
                         System.out.print(weather.pcp);
                         System.out.println();
                 }
-                midTermForecast midTerm = new midTermForecast(LocalDateTime.of(2024, 4, 12, 18, 0), new Location(55, 127, "11B00000"));
+        }
+        static void test_mid()
+        {
+                midTermForecast midTerm = new midTermForecast(new Location(55, 127, "11B00000"));
                 //중기 예보의 경우 0600 1800에만 발표
                 // midTerm.getWeather_midTerm();
                 MidTermWeather weather_m[] = midTerm.getWeather_midTerm_get_all();
@@ -36,6 +46,23 @@ public class App {
                         System.out.println((i + 3) + "일 후 오후 강수확률 :" + weather_m[i].rnStPm);
                         System.out.println((i + 3) + "일 후 오후 날씨 :" + weather_m[i].wfPm);
                 }
-	}	
+        }
+
+        static void test_text()
+        {
+                midTermForecast midTerm = new midTermForecast(new Location(55, 127, "11B00000"));
+                String text = midTerm.getWeather_midTerm_text("108");
+                System.out.println(text);
+        }
+        static void test_maxmin()
+        {
+                midTermForecast midTerm = new midTermForecast(new Location(55, 127, "11B10101"));
+                midTermTemp tmp[] = midTerm.getWeather_midTerm_highest_lowest_temp("11B10101");
+                for(int i = 0; i < 8; ++i)
+                {
+                        System.out.println(i + "일후 최소 : " + tmp[i].min);
+                        System.out.println(i + "일후 최대 : " + tmp[i].max);
+                }
+        }
 } 
 //-Dfile.encoding=UTF-8 한글 꺠지면 컴파일시 추가
