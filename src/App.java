@@ -4,10 +4,11 @@ import java.time.format.DateTimeFormatter;
 public class App {
         public static void main(String[] args)
         {
-                test_short();
+                // test_short();
                 // test_mid();
                 // test_text();
                 // test_maxmin();
+                // test_getImageNum();
 	}
 
         static void test_short()
@@ -56,6 +57,11 @@ public class App {
                         System.out.println(i + "일후 최소 : " + tmp[i].min);
                         System.out.println(i + "일후 최대 : " + tmp[i].max);
                 }
+        }
+
+        static void test_getImageNum()
+        {
+                System.out.println(getImageNum.getNum(WeatherCode.sunny));
         }
 } 
 //-Dfile.encoding=UTF-8 한글 꺠지면 컴파일시 추가

@@ -1,6 +1,5 @@
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -27,9 +26,7 @@ public class midTermForecast {
         type = "중기전망조회";
         int num = 1;
         String api = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidFcst?dataType=JSON&serviceKey=" + serviceKey + "&numOfRows=" + num + "pageNo=1&stnId=" + stnId + "&tmFc=" + base.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        System.out.println(api);
         JSONObject responseJson = GetJson.getJson(api);
-        System.out.println();
         return (String)(((JSONObject)((JSONObject)((JSONArray)((JSONObject)((JSONObject)((JSONObject)responseJson.get("response")).get("body")).get("items")).get("item")).get(0))).get("wfSv"));
     }
 
@@ -57,8 +54,8 @@ public class midTermForecast {
                 weathr[i].base = base;
                 weathr[i].rnStAm = item.get("rnSt" + (i + 3) + "Am").toString();
                 weathr[i].rnStPm = item.get("rnSt" + (i + 3) + "Pm").toString();
-                weathr[i].wfAm =  item.get("wf" + (i + 3) + "Am").toString();
-                weathr[i].wfPm = item.get("wf" + (i + 3) + "Pm").toString();
+                weathr[i].wfAm =  getCodeMid(item.get("wf" + (i + 3) + "Am").toString());
+                weathr[i].wfPm = getCodeMid(item.get("wf" + (i + 3) + "Pm").toString());
             }
             try
             {
@@ -67,14 +64,41 @@ public class midTermForecast {
                     weathr[i] = new MidTermWeather();
                     weathr[i].rnStAm = item.get("rnSt" + (i + 3)).toString();
                     weathr[i].rnStPm = item.get("rnSt" + (i + 3)).toString();
-                    weathr[i].wfAm =  item.get("wf" + (i + 3)).toString();
-                    weathr[i].wfPm = item.get("wf" + (i + 3)).toString();
+                    weathr[i].wfAm =  getCodeMid(item.get("wf" + (i + 3)).toString());
+                    weathr[i].wfPm = getCodeMid(item.get("wf" + (i + 3)).toString());
                 }
             }
             catch(Exception e){}
         }
         catch(Exception e){System.err.println(responseJson);}
         return weathr;
+    }
+
+    private WeatherCode getCodeMid(String weather)
+    {
+        if (weather.equals("맑음"))
+            return WeatherCode.sunny;
+        if (weather.equals("구름많음"))
+            return WeatherCode.cloud;
+        if (weather.equals("구름많고 비"))
+            return WeatherCode.cloudRain;
+        if (weather.equals("구름많고 눈"))
+            return WeatherCode.cloudSnow;
+        if (weather.equals("구름많고 비/눈"))
+            return WeatherCode.cloudRS;
+        if (weather.equals("구름많고 소나기"))
+            return WeatherCode.cloudShower;
+        if (weather.equals("흐림"))
+            return WeatherCode.cloudy;
+        if (weather.equals("흐리고 비"))
+            return WeatherCode.cloudyRain;
+        if (weather.equals("흐리고 눈"))
+            return WeatherCode.cloudySnow;
+        if (weather.equals("흐리음 비/눈"))
+            return WeatherCode.cloudyRS;
+        if (weather.equals("흐리고 소나기"))
+            return WeatherCode.cloudyShower;
+        return WeatherCode.sunny;
     }
 
     public midTermTemp[] getWeather_midTerm_highest_lowest_temp(String regId)//중기육상예보조회와 다른 rdgId를 사용함
