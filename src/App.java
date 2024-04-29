@@ -4,10 +4,10 @@ import java.time.format.DateTimeFormatter;
 public class App {
         public static void main(String[] args)
         {
-                // test_short();
+                test_short();
                 // test_mid();
                 // test_text();
-                test_maxmin();
+                // test_maxmin();
 	}
 
         static void test_short()
@@ -21,15 +21,8 @@ public class App {
                 //저는 for문으로 모두 출력했지만 첫번째 인덱스의 시간과 날짜를 보고 몇시간 후인지 전인지 보고 인덱스를 더하고 몇일 뒤인지에 따라 24만큼 인덱스를 더해서 빠르게 접근가능합니다
                 for(ShortTermWeather weather : weather_s)
                 {
-                        System.out.print("날짜 : ");
-                        System.out.println(weather.fcst.format(DateTimeFormatter.ofPattern("ddHHmm")));
-                        System.out.print("TMP 온도 : ");
-                        System.out.print(weather.tmp);
-                        System.out.print(", POP 강수확률 : ");
-                        System.out.print(weather.pop);
-                        System.out.print(", PCP 강수량 : ");
-                        System.out.print(weather.pcp);
-                        System.out.println();
+                        System.out.println("날짜 : " + weather.fcst.format(DateTimeFormatter.ofPattern("ddHHmm")));
+                        System.out.println("TMP 온도 : " + weather.tmp + ", POP 강수확률 : " + weather.pop + ", PCP 강수량 : " + weather.pcp + " , 날씨 : " + weather.wCode);
                 }
         }
         static void test_mid()
